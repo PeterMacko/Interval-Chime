@@ -4,8 +4,10 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.util.Log
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.sin
@@ -21,7 +23,11 @@ enum class SoundType(val displayName: String) {
 class AmbientSoundPlayer {
     private val sampleRate = 44100
     private val soundBuffers = ConcurrentHashMap<SoundType, ShortArray>()
-    private val playerScope = CoroutineScope(Dispatchers.Default)
+    
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("AmbientSoundPlayer", "Unhandled exception in playerScopeCoroutines", throwable)
+    }
+    private val playerScope = CoroutineScope(Dispatchers.Default + exceptionHandler + SupervisorJob())
 
     init {
         // Pre-synthesize all sounds off the Main thread to keep the application startup snappy and responsive
@@ -32,7 +38,7 @@ class AmbientSoundPlayer {
                         soundBuffers[type] = synthesizeSound(type)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e("AmbientSoundPlayer", "Failed to pre-synthesize sounds asynchronously", e)
             }
         }
@@ -166,7 +172,7 @@ class AmbientSoundPlayer {
                 
                 audioTrack.stop()
                 audioTrack.release()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e("AmbientSoundPlayer", "Error during sound playback", e)
             }
         }

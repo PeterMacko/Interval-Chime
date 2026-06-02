@@ -1,5 +1,5 @@
 {
-  "name": "Interval Chime",
+  "name": "Metronom timer",
   "description": "A minimalist timer that plays a non-disturbing sound periodically without interrupting your background music.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
